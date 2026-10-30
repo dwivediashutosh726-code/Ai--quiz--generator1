@@ -1,0 +1,138 @@
+from pathlib import Path
+
+html = r'''<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#090d1c">
+<title>QuizNova — Smart Quiz Studio</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
+:root{--bg:#090d1c;--panel:rgba(20,27,49,.82);--line:rgba(255,255,255,.1);--text:#f5f7ff;--muted:#9aa6c4;--purple:#9b7bff;--cyan:#55d6e8;--green:#55d69a;--red:#ff7187}
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:radial-gradient(ellipse at 15% 10%,#25204e 0,transparent 38%),radial-gradient(ellipse at 90% 85%,#103b50 0,transparent 34%),var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;padding:28px 18px;overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.18;background-image:radial-gradient(#fff 0.6px,transparent .6px);background-size:24px 24px}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.app{width:min(100%,920px);margin:auto;position:relative;z-index:1}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:30px}
+.brand{display:flex;align-items:center;gap:12px;font:700 21px 'Space Grotesk',sans-serif;letter-spacing:-.5px}
+.logo{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,#a58aff,#54d7e8);color:#101329;font-size:22px;box-shadow:0 8px 28px #8c75ff55}
+.brand small{display:block;color:var(--muted);font:500 11px 'DM Sans';letter-spacing:1.8px;text-transform:uppercase;margin-top:2px}
+.status{border:1px solid var(--line);border-radius:999px;padding:8px 13px;color:#c8d2ed;font-size:12px;background:#ffffff08}
+.status i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:7px;box-shadow:0 0 10px var(--green)}
+.hero{text-align:center;margin:12px auto 28px;max-width:650px}
+.eyebrow{display:inline-flex;align-items:center;gap:7px;border:1px solid #a58aff55;background:#a58aff12;color:#c9baff;border-radius:999px;padding:7px 12px;font-size:11px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase}
+h1{font:700 clamp(34px,6vw,54px)/1.08 'Space Grotesk',sans-serif;letter-spacing:-2px;margin:17px 0 12px}
+h1 span{background:linear-gradient(100deg,#b39cff,#55d6e8);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{color:var(--muted);font-size:15px;line-height:1.7}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:25px;padding:clamp(20px,4vw,34px);box-shadow:0 25px 80px #0005;backdrop-filter:blur(18px)}
+.setup-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.field.full{grid-column:1/-1}
+label{display:block;color:#dce3f8;font-size:13px;font-weight:700;margin-bottom:9px}
+input,select{width:100%;background:#0d1428;border:1px solid #303b5c;color:var(--text);border-radius:12px;padding:14px 15px;outline:none;transition:.2s}
+input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px #9b7bff22}
+input::placeholder{color:#65718f}
+.topic-chips{display:flex;gap:9px;flex-wrap:wrap;margin-top:11px}
+.chip{border:1px solid var(--line);background:#ffffff08;color:#c4cce1;padding:8px 12px;border-radius:999px;font-size:12px;transition:.2s}
+.chip:hover,.chip.active{border-color:#a58aff;color:#e2d9ff;background:#a58aff20}
+.select-wrap{position:relative}
+.primary{width:100%;border:0;border-radius:13px;padding:15px 18px;background:linear-gradient(100deg,#9675ff,#5cbee9);color:#101329;font-weight:800;font-size:15px;box-shadow:0 10px 28px #8b74ff40;transition:transform .2s,filter .2s}
+.primary:hover{transform:translateY(-2px);filter:brightness(1.08)}
+.primary:active{transform:translateY(0)}
+.field.full .primary{margin-top:7px}
+.note{color:#8390af;font-size:11px;line-height:1.6;margin-top:13px;text-align:center}
+.hidden{display:none!important}
+.quiz-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px}
+.pill{border:1px solid var(--line);background:#ffffff08;padding:9px 12px;border-radius:999px;font-size:12px;color:#dce4ff}
+.pill strong{color:#fff}
+.timer{color:#8ce5ed}
+.progress-meta{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin-bottom:9px}
+.progress-track{height:8px;background:#ffffff12;border-radius:99px;overflow:hidden;margin-bottom:27px}
+.progress-fill{height:100%;width:0;background:linear-gradient(90deg,#a17fff,#55d6e8);border-radius:99px;transition:width .35s}
+.question-kicker{font-size:11px;letter-spacing:1.6px;text-transform:uppercase;color:#b9a8ff;font-weight:800;margin-bottom:12px}
+.question{font:600 clamp(20px,3vw,27px)/1.35 'Space Grotesk',sans-serif;margin-bottom:23px}
+.options{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.option{display:flex;align-items:center;gap:12px;text-align:left;padding:15px;border-radius:14px;background:#ffffff08;border:1px solid #ffffff16;color:#e6eaff;min-height:64px;transition:.2s}
+.option:hover:not(:disabled){border-color:#a58aff;background:#a58aff13;transform:translateY(-1px)}
+.option .letter{width:29px;height:29px;flex:0 0 29px;border-radius:9px;background:#ffffff10;display:grid;place-items:center;font-size:12px;font-weight:800;color:#b9c3e1}
+.option.correct{border-color:#55d69a;background:#55d69a18;color:#bff7db}
+.option.correct .letter{background:#55d69a;color:#082417}
+.option.wrong{border-color:#ff7187;background:#ff718718;color:#ffd2d9}
+.option.wrong .letter{background:#ff7187;color:#2b0710}
+.option:disabled{cursor:default}
+.feedback{min-height:24px;margin-top:18px;font-size:13px;font-weight:700}
+.feedback.good{color:var(--green)}.feedback.bad{color:var(--red)}
+.quiz-actions{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:18px}
+.text-btn{border:1px solid var(--line);background:#ffffff08;color:#c5cde3;padding:11px 15px;border-radius:11px}
+.next{width:auto;min-width:160px;padding:13px 18px}
+.result{text-align:center}
+.trophy{width:82px;height:82px;margin:0 auto 16px;border-radius:26px;display:grid;place-items:center;font-size:38px;background:linear-gradient(135deg,#a58aff33,#55d6e833);border:1px solid #ffffff22}
+.result h2{font:700 31px 'Space Grotesk';margin-bottom:7px}
+.result-sub{color:var(--muted);margin-bottom:24px}
+.score-ring{width:150px;height:150px;border-radius:50%;margin:0 auto 24px;display:grid;place-items:center;background:conic-gradient(#9b7bff var(--percent),#ffffff16 0);position:relative}
+.score-ring:before{content:"";position:absolute;inset:10px;border-radius:50%;background:#151c34}
+.score-ring div{position:relative}.score-ring strong{display:block;font:700 34px 'Space Grotesk'}.score-ring small{color:var(--muted);font-size:11px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:22px 0}
+.stat{background:#ffffff08;border:1px solid var(--line);border-radius:14px;padding:15px 8px}
+.stat strong{display:block;font:700 23px 'Space Grotesk';margin-bottom:4px}.stat span{color:var(--muted);font-size:11px}
+.result-actions{display:flex;gap:11px;justify-content:center;flex-wrap:wrap}
+.result-actions button{width:auto;min-width:155px}
+.review{margin-top:24px;text-align:left;border-top:1px solid var(--line);padding-top:20px}
+.review h3{font:600 18px 'Space Grotesk';margin-bottom:13px}
+.review-item{padding:13px 14px;border:1px solid var(--line);border-radius:12px;margin-top:9px;background:#ffffff06}
+.review-item p{font-size:13px;line-height:1.5;margin-bottom:6px}.review-item small{color:var(--muted);line-height:1.6}
+.footer{text-align:center;color:#697594;font-size:11px;margin:22px 0 4px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);opacity:0;background:#202b48;border:1px solid var(--line);padding:12px 17px;border-radius:12px;color:#fff;font-size:13px;transition:.25s;z-index:5;pointer-events:none}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:620px){body{padding:18px 12px}.topbar{margin-bottom:24px}.status{font-size:10px;padding:7px 9px}.brand{font-size:18px}.hero{margin-bottom:22px}.setup-grid{grid-template-columns:1fr;gap:16px}.field.full{grid-column:auto}.options{grid-template-columns:1fr}.quiz-head{flex-wrap:wrap}.stats{gap:8px}.stat{padding:13px 5px}.stat strong{font-size:20px}.panel{border-radius:20px}.result-actions{flex-direction:column}.result-actions button{width:100%}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<main class="app">
+  <header class="topbar">
+    <div class="brand"><div class="logo">✦</div><div>QuizNova<small>Smart quiz studio</small></div></div>
+    <div class="status"><i></i> Ready to learn</div>
+  </header>
+
+  <section class="hero">
+    <div class="eyebrow">✧ Learn • Play • Improve</div>
+    <h1>Challenge your <span>mind.</span></h1>
+    <p>Create a quick quiz, test what you know, and watch your knowledge grow.</p>
+  </section>
+
+  <section class="panel" id="setup">
+    <div class="setup-grid">
+      <div class="field full">
+        <label for="topic">Choose your quiz topic</label>
+        <input id="topic" type="text" placeholder="Type HTML, JavaScript or Science…" autocomplete="off">
+        <div class="topic-chips">
+          <button class="chip active" data-topic="HTML">🌐 HTML</button>
+          <button class="chip" data-topic="JavaScript">⚡ JavaScript</button>
+          <button class="chip" data-topic="Science">🧪 Science</button>
+        </div>
+      </div>
+      <div class="field">
+        <label for="difficulty">Difficulty level</label>
+        <select id="difficulty"><option>Easy</option><option selected>Medium</option><option>Hard</option></select>
+      </div>
+      <div class="field">
+        <label for="total">Number of questions</label>
+        <select id="total"><option value="5">5 Questions</option><option value="10">10 Questions</option></select>
+      </div>
+      <div class="field full">
+        <button class="primary" id="startBtn">✦ Start my quiz <span>→</span></button>
+        <p class="note">Pick a topic and get started. This demo includes built-in questions and works offline.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel hidden" id="quiz">
+    <div class="quiz-head">
+      <div class="pill" id="topicBadge">🌐 HTML · Medium</div>
+      <div class="pill timer">◷ <strong id="timer">20</strong>s left</div>
+      <div class="pill">⭐ Score: <strong id="score">0</strong></div>
+    </div>
+    <div class
